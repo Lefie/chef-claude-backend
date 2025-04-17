@@ -6,11 +6,24 @@ const PORT = 8080
 
 const app = express()
 
+app.use(express.json())
+
 const client = new Anthropic({
     apiKey: process.env.CLAUDE_API_KEY, // This is the default and can be omitted
 });
 
-// ingredientsArr ["egg","tomato","potato","noodles"]
+app.post("/api/get_recipe",async(req, res) => {
+    const ingredients = req.body.ingredients
+    try {
+        const data = await getRecipeFromChefClaude(ingredients)
+        res.status(200).json({"recipe":data})
+
+    }catch(err){
+        res.status(500).json({"error":err})
+    }
+})
+
+
 async function getRecipeFromChefClaude(ingredientsArr) {
     const SYSTEM_PROMPT = `
         You are an assistant that receives a list of ingredients that a user has and suggests a recipe they could make with some or all of those ingredients. You don't need to use every ingredient they mention in your recipe. The recipe can include additional ingredients they didn't mention, but try not to include too many extra ingredients. Format your response in markdown to make it easier to render to a web page
